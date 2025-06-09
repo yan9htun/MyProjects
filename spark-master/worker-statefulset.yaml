@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spark-worker
+  namespace: spark
+spec:
+  serviceName: "spark-worker"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-worker
+  template:
+    metadata:
+      labels:
+        app: spark-worker
+    spec:
+      containers:
+      - name: spark-worker
+        image: bitnami/spark:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPARK_MODE
+          value: "worker"
+        - name: SPARK_MASTER_URL
+          value: "spark://spark-master:7077"
+        volumeMounts:
+        - name: spark-worker-storage
+          mountPath: /opt/spark/work-dir
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      volumes:
+      - name: spark-worker-storage
+        persistentVolumeClaim:
+          claimName: spark-worker-pvc

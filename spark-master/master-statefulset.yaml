@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spark-master
+  namespace: spark
+spec:
+  serviceName: "spark-master"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-master
+  template:
+    metadata:
+      labels:
+        app: spark-master
+    spec:
+      containers:
+      - name: spark-master
+        image: bitnami/spark:latest
+        ports:
+        - containerPort: 7077
+        - containerPort: 8080
+        env:
+        - name: SPARK_MODE
+          value: "master"
+        volumeMounts:
+        - name: spark-master-storage
+          mountPath: /opt/spark/work-dir
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      volumes:
+      - name: spark-master-storage
+        persistentVolumeClaim:
+          claimName: spark-master-pvc
